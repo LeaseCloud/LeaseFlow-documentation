@@ -1,0 +1,300 @@
+#Checkout
+## Introduction
+
+LeaseCloud checkout is designed to be used either as a complete checkout solution for leasing only sites or as a payment provider within an existing checkout-flow for sites that wish to provide other payment methods.
+
+The following description describes the initial implementation that will be checkout only.
+
+## Partner site setup
+
+The following items need to be setup by the partner in order to integrate with the LeaseCloud checkout.
+
+Page | Description
+------ | -----------
+Checkout page | A URL to the page used to embed the LeaseCloud checkout. Includes a div that will be populated with HTML code received from the LeaseCloud checkout api.
+Confirmation page | A URL to the page the LeaseCloud checkout will redirect to when the checkout process completes. Includes a div that will be populated with HTML code received from the LeaseCloud checkout api.
+Notification WebHook URL | A URL that LeaseCloud will use to post information back to the partner regarding the status of different orders
+Terms
+Terms and conditions page | A URL to the partners terms and conditions that any customer agrees to by purchasing via their site
+
+## Starting the checkout process
+
+Before starting the checkout process the customer must have selected one or more items they wish to buy and have filled in their shipping information. The partners site may then trigger a checkout by making a http request to the [checkout API entry point](#checkout-api-entry-point) .
+
+The LeaseCloud orderID should be saved by the partner and connected to the checkout (to allow the order to be updated before checkout completion) and the partners checkout page should be displayed with the html code snippet received from the entry point embedded in it.
+
+## Completing the checkout process
+
+Once the LeaseCloud checkout process has been successfully completed the customer will be redirected to the confirmation url sent during the initial checkout request.
+
+The partner can then retreive the completed checkout information via a request to the [order API](#retreive-an-order). Note that when the checkout is complete the item may still not be ready to send, the status of the order retrieved is provided in the response and the order should only be dispatched to the customer when the status is OK.
+
+The information will also be synced back to the shop via the notification webhook sent in the initial request to the checkout API entry point.
+
+## Updating a checkout process
+
+If the customer does not forfill the checkout process and returns to the shop to modify items or shipping information. The partners site can update the order on the LeaseCloud checkout by performing a http request containing the new information to the  LeaseCloud [checkout API update end point](#checkout-api-update-end-point).
+
+## Checkout API entry point
+
+```http
+POST /v1/orders HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer [bearer token]
+```
+
+<div class="move-right">
+  <h3>Request body example</h3>
+</div>
+
+```json
+{
+  "totalAmount": 12000,
+  "shippingAmount": 0,
+  "shippingVAT": '0',
+  "currency": "SEK",
+  "locale": "sv-se",
+  "country": "SE",
+  "VAT": 0,
+  "items":
+  [
+    {
+      "name": "MacBook Pro 15",
+      "productId": "13",
+      "quantity": 1,
+      "unitAmount": 3400000,
+      "totalAmount": 3400000,
+      "VAT": 0
+    },
+    {
+      "name": "iPhone X",
+      "productId": "233",
+      "quantity": 2,
+      "unitAmount": 1200000,
+      "totalAmount": 2400000,
+      "VAT": 0
+    }
+  ],
+  "partnerUrls": {
+    "terms": "https://www.example.se/terms",
+    "checkout": "https://www.example.se/checkout",
+    "confirmation": "https://www.example.se/confirmation",
+    "webhook": "https://www.example.se/notification-hook"
+  }
+}
+```
+
+<div class="move-right">
+  <h3>Response body</h3>
+</div>
+
+```json
+{
+  "html": "<div id=’leasecloud_leaseflow_container’>
+        <script>(function() {
+          // Some script to load the iframe into the page
+          var conf = {
+            orderID: '1293u924972439'
+          }
+          createElement(script)
+        })()</script>
+        <noscript>Please <a href=’https://enable-javascript.com/’>enable javascript</a>.</noscript>
+      </div>"
+  "orderId": "1293u924972439",
+}
+```
+
+<div class="move-right">
+  <h3>Error response body</h3>
+</div>
+
+```json
+{
+  "error": {
+    "code": "InvalidOrder",
+    "message": "Validation error",
+    "fields": [
+      {
+        "title": "notNull Violation",
+        "message": "totalAmount cannot be null",
+        "field": "totalAmount"
+      },
+    ]
+  }
+}
+```
+
+### HTTP Request
+
+`POST /v1/orders`
+
+### HTTP Body
+
+The body of the http request contains the order information.
+
+Parameter | Type        | Required | Description
+--------- | ----------- | -------- | -----------
+partnerUrls | object | ✔︎ | An object containing urls to the relevant partner pages
+ • terms | string | ✔︎ | The terms and conditions url
+ • checkout | string | ✔︎ | The checkout page url
+ • confirmation | string | ✔︎ | The confirmation page url
+ • webhook | string | ✔︎ | The notification webhook url
+totalAmount | integer | ✔︎ | Total amount the customer will pay Ex. VAT <br> Minimum 6000 * 100
+VAT | integer | ✔︎ | Total VAT amount
+shippingAmount | integer | ✔︎ | The shipping cost
+shippingVAT | integer | ✔︎ | The shipping cost VAT
+currency | enum | ✔︎ | In which currency is the amounts. We only support `SEK` at the moment
+locale | enum | ✔︎ | Purchase language string compliant with RFC 1766
+country | enum | ✔︎ | The purchase country 2 letter code e.g. SE
+months | integer | | The leasing period in months, if known
+items | Item object | ✔︎ | See below
+
+### Item object
+
+Parameter | Type        | Required | Description
+--------- | ----------- | -------- | -----------
+name | string | ✔︎ | Name / title of the product
+productId | string | ✔︎ | Product id
+quantity | integer | ✔︎ | Quantity
+unitAmount | integer | ✔︎ | Price for a single unit ex VAT
+totalAmount | integer | ✔︎ | Total amount (quantity * unitAmount) ex VAT
+VAT | integer | ✔︎ | VAT for the total amount
+
+### HTTP Response
+
+Parameter | Type        | Description
+--------- | ----------- | -----------
+html | string | The HTML snippet to load the checkout iframe
+orderId | string | The leasecloud order id
+
+## Checkout API update end point
+
+```http
+POST /v1/orders/{orderId} HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer [bearer token]
+```
+
+<div class="move-right">
+  <h3>Request body example</h3>
+</div>
+
+```json
+{
+  "totalAmount": 12000,
+  "shippingAmount": 0,
+  "shippingVAT": '0',
+  "currency": "SEK",
+  "locale": "sv-se",
+  "country": "SE",
+  "VAT": 0,
+  "items":
+  [
+    {
+      "name": "MacBook Pro 15",
+      "productId": "13",
+      "quantity": 1,
+      "unitAmount": 3400000,
+      "totalAmount": 3400000,
+      "VAT": 0
+    },
+    {
+      "name": "iPhone X",
+      "productId": "233",
+      "quantity": 2,
+      "unitAmount": 1200000,
+      "totalAmount": 2400000,
+      "VAT": 0
+    }
+  ],
+  "partnerUrls": {
+    "terms": "https://www.example.se/terms",
+    "checkout": "https://www.example.se/checkout",
+    "confirmation": "https://www.example.se/confirmation",
+    "webhook": "https://www.example.se/notification-hook"
+  }
+}
+```
+
+<div class="move-right">
+  <h3>Response body</h3>
+</div>
+
+```json
+{
+  "html": "<div id=’leasecloud_leaseflow_container’>
+        <script>(function() {
+          // Some script to load the iframe into the page
+          var conf = {
+            orderID: '1293u924972439'
+          }
+          createElement(script)
+        })()</script>
+        <noscript>Please <a href=’https://enable-javascript.com/’>enable javascript</a>.</noscript>
+      </div>"
+  "orderId": "1293u924972439",
+}
+```
+
+<div class="move-right">
+  <h3>Error response body</h3>
+</div>
+
+```json
+{
+  "error": {
+    "code": "InvalidOrder",
+    "message": "Validation error",
+    "fields": [
+      {
+        "title": "notNull Violation",
+        "message": "totalAmount cannot be null",
+        "field": "totalAmount"
+      },
+    ]
+  }
+}
+```
+
+### HTTP Request
+
+`POST /v1/orders/{orderId}`
+
+### HTTP Body
+
+The body of the http request contains the order information.
+
+Parameter | Type        | Required | Description
+--------- | ----------- | -------- | -----------
+partnerUrls | object | ✔︎ | An object containing urls to the relevant partner pages
+ • terms | string | ✔︎ | The terms and conditions url
+ • checkout | string | ✔︎ | The checkout page url
+ • confirmation | string | ✔︎ | The confirmation page url
+ • webhook | string | ✔︎ | The notification webhook url
+totalAmount | integer | ✔︎ | Total amount the customer will pay Ex. VAT <br> Minimum 6000 * 100
+VAT | integer | ✔︎ | Total VAT amount
+shippingAmount | integer | ✔︎ | The shipping cost
+shippingVAT | integer | ✔︎ | The shipping cost VAT
+currency | enum | ✔︎ | In which currency is the amounts. We only support `SEK` at the moment
+locale | enum | ✔︎ | Purchase language string compliant with RFC 1766
+country | enum | ✔︎ | The purchase country 2 letter code e.g. SE
+months | integer | | The leasing period in months, if known
+items | Item object | ✔︎ | See below
+
+### Item object
+
+Parameter | Type        | Required | Description
+--------- | ----------- | -------- | -----------
+name | string | ✔︎ | Name / title of the product
+productId | string | ✔︎ | Product id
+quantity | integer | ✔︎ | Quantity
+unitAmount | integer | ✔︎ | Price for a single unit ex VAT
+totalAmount | integer | ✔︎ | Total amount (quantity * unitAmount) ex VAT
+VAT | integer | ✔︎ | VAT for the total amount
+
+### HTTP Response
+
+Parameter | Type        | Description
+--------- | ----------- | -----------
+html | string | The HTML snippet to load the checkout iframe
+orderId | string | The leasecloud order id
