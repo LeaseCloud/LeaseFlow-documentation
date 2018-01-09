@@ -8,7 +8,6 @@ toc_footers:
 includes:
   - checkout
   - orders
-  - config
   - webhooks
   - errors
 

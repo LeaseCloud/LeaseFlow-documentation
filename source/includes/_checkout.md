@@ -5,6 +5,8 @@ LeaseCloud checkout is designed to be used either as a complete checkout solutio
 
 The following description describes the initial implementation that will be checkout only.
 
+The url to staging is https://flow.staging.leasecloud.com
+
 ## Partner site setup
 
 The following items need to be setup by the partner in order to integrate with the LeaseCloud checkout.
@@ -18,15 +20,14 @@ Terms and conditions page | A URL to the partners terms and conditions that any 
 
 ## Starting the checkout process
 
-Before starting the checkout process the customer must have selected one or more items they wish to buy and have filled in their shipping information. The partners site may then trigger a checkout by making a http request to the [checkout API entry point](#checkout-api-entry-point) .
-
+Before starting the checkout process the customer must have selected one or more items they wish to buy. The partners site may then trigger a checkout by making a http request to the [checkout API entry point](#checkout-api-entry-point).
 The LeaseCloud orderID should be saved by the partner and connected to the checkout (to allow the order to be updated before checkout completion) and the partners checkout page should be displayed with the html code snippet received from the entry point embedded in it.
 
 ## Completing the checkout process
 
 Once the LeaseCloud checkout process has been successfully completed the customer will be redirected to the confirmation url sent during the initial checkout request.
 
-The partner can then retreive the completed checkout information via a request to the [order API](#retreive-an-order). Note that when the checkout is complete the item may still not be ready to send, the status of the order retrieved is provided in the response and the order should only be dispatched to the customer when the status is OK.
+The partner can then retrieve the completed checkout information via a request to the [order API](#retrieve-an-order). Note that when the checkout is complete the item may still not be ready to send, the status of the order retrieved is provided in the response and the order should only be dispatched to the customer when the status is OK.
 
 The information will also be synced back to the shop via the notification webhook sent in the initial request to the checkout API entry point.
 
@@ -125,7 +126,7 @@ Authorization: Bearer [bearer token]
 
 ### HTTP Request
 
-`POST /v1/orders`
+`POST /v1/orders?live=checkout-mock`
 
 ### HTTP Body
 

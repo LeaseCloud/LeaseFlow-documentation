@@ -224,19 +224,15 @@
 
 <p>Here you will find everything you need to develop LeaseCloud modules for different e-commerce platforms or to integrate LeaseCloud in your checkout.</p>
 
-<h1 id="sdk">SDK</h1>
+<!---
+# SDK
+* [PHP SDK](https://github.com/LeaseCloud/leasecloud-php-sdk)
+* [.NET SDK](https://github.com/LeaseCloud/leasecloud-dotnet-sdk)
 
-<ul>
-<li><a href="https://github.com/LeaseCloud/leasecloud-php-sdk">PHP SDK</a></li>
-<li><a href="https://github.com/LeaseCloud/leasecloud-dotnet-sdk">.NET SDK</a></li>
-</ul>
-
-<h1 id="plugins">Plugins</h1>
-
-<ul>
-<li><a href="https://wordpress.org/plugins/leasecloud-for-woocommerce/">Woocommerce</a></li>
-<li>Magento <a href="https://www.leasecloud.se/leasing-magento-m1/">M1</a> <a href="https://www.leasecloud.se/leasing-magento-2">M2</a></li>
-</ul>
+# Plugins
+* [Woocommerce](https://wordpress.org/plugins/leasecloud-for-woocommerce/)
+* Magento [M1](https://www.leasecloud.se/leasing-magento-m1/) [M2](https://www.leasecloud.se/leasing-magento-2)
+-->
 
 <h1 id="authorization">Authorization</h1>
 
@@ -270,9 +266,62 @@ When you are becoming a partner we will give you a access token and a webhook to
 
 <p>All Countries are is in ISO 3166 alpha-2. E.g. se = Sweden, no = Norway.</p>
 
-          <h1 id="orders">Orders</h1>
+          <h1 id="checkout">Checkout</h1>
 
-<h2 id="create-a-new-order">Create a new order</h2>
+<h2 id="introduction">Introduction</h2>
+
+<p>LeaseCloud checkout is designed to be used either as a complete checkout solution for leasing only sites or as a payment provider within an existing checkout-flow for sites that wish to provide other payment methods.</p>
+
+<p>The following description describes the initial implementation that will be checkout only.</p>
+
+<p>The url to staging is https://flow.staging.leasecloud.com</p>
+
+<h2 id="partner-site-setup">Partner site setup</h2>
+
+<p>The following items need to be setup by the partner in order to integrate with the LeaseCloud checkout.</p>
+
+<table><thead>
+<tr>
+<th>Page</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Checkout page</td>
+<td>A URL to the page used to embed the LeaseCloud checkout. Includes a div that will be populated with HTML code received from the LeaseCloud checkout api.</td>
+</tr>
+<tr>
+<td>Confirmation page</td>
+<td>A URL to the page the LeaseCloud checkout will redirect to when the checkout process completes. Includes a div that will be populated with HTML code received from the LeaseCloud checkout api.</td>
+</tr>
+<tr>
+<td>Notification WebHook URL</td>
+<td>A URL that LeaseCloud will use to post information back to the partner regarding the status of different orders</td>
+</tr>
+<tr>
+<td>Terms and conditions page</td>
+<td>A URL to the partners terms and conditions that any customer agrees to by purchasing via their site</td>
+</tr>
+</tbody></table>
+
+<h2 id="starting-the-checkout-process">Starting the checkout process</h2>
+
+<p>Before starting the checkout process the customer must have selected one or more items they wish to buy. The partners site may then trigger a checkout by making a http request to the <a href="#checkout-api-entry-point">checkout API entry point</a>.
+The LeaseCloud orderID should be saved by the partner and connected to the checkout (to allow the order to be updated before checkout completion) and the partners checkout page should be displayed with the html code snippet received from the entry point embedded in it.</p>
+
+<h2 id="completing-the-checkout-process">Completing the checkout process</h2>
+
+<p>Once the LeaseCloud checkout process has been successfully completed the customer will be redirected to the confirmation url sent during the initial checkout request.</p>
+
+<p>The partner can then retrieve the completed checkout information via a request to the <a href="#retrieve-an-order">order API</a>. Note that when the checkout is complete the item may still not be ready to send, the status of the order retrieved is provided in the response and the order should only be dispatched to the customer when the status is OK.</p>
+
+<p>The information will also be synced back to the shop via the notification webhook sent in the initial request to the checkout API entry point.</p>
+
+<h2 id="updating-a-checkout-process">Updating a checkout process</h2>
+
+<p>If the customer does not forfill the checkout process and returns to the shop to modify items or shipping information. The partners site can update the order on the LeaseCloud checkout by performing a http request containing the new information to the  LeaseCloud <a href="#checkout-api-update-end-point">checkout API update end point</a>.</p>
+
+<h2 id="checkout-api-entry-point">Checkout API entry point</h2>
 <pre class="highlight http tab-http"><code><span class="nf">POST</span> <span class="nn">/v1/orders</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
 <span class="na">Content-Type</span><span class="p">:</span> <span class="s">application/json</span>
 <span class="na">Authorization</span><span class="p">:</span> <span class="s">Bearer [bearer token]</span>
@@ -281,68 +330,55 @@ When you are becoming a partner we will give you a access token and a webhook to
   <h3>Request body example</h3>
 </div>
 <pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
-  </span><span class="s2">"orderId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"c8e0bda3-dbe0-55ad-8de7-4b341fab49a3"</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"firstName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Matthew"</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"lastName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Hunter"</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"company"</span><span class="p">:</span><span class="w"> </span><span class="s2">"LeaseCloud AB"</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"orgNumber"</span><span class="p">:</span><span class="w"> </span><span class="s2">"559089-4308"</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"hello@leasecloud.com"</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"authorizedSignatory"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"phone"</span><span class="p">:</span><span class="w"> </span><span class="s2">"09 61 64 48 49"</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"customerIp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"131.168.20.70"</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"totalAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">1010000</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"VAT"</span><span class="p">:</span><span class="w"> </span><span class="mi">252500</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"shippingAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">10000</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"shippingVAT"</span><span class="p">:</span><span class="w"> </span><span class="mi">2500</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"totalAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">12000</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"shippingAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"shippingVAT"</span><span class="p">:</span><span class="w"> </span><span class="err">'</span><span class="mi">0</span><span class="err">'</span><span class="p">,</span><span class="w">
   </span><span class="s2">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SEK"</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"months"</span><span class="p">:</span><span class="w"> </span><span class="mi">24</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"tariff"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.1</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"billing"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="s2">"address"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Mystreet 121"</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"address2"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"city"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Stockholm"</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"state"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"postalCode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"12345"</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"country"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SE"</span><span class="w">
-  </span><span class="p">},</span><span class="w">
-  </span><span class="s2">"shipping"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="s2">"firstName"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"lastName"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"company"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"address"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"address2"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"city"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"state"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"postalCode"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"country"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
-  </span><span class="p">},</span><span class="w">
-  </span><span class="s2">"customerMessage"</span><span class="p">:</span><span class="w"> </span><span class="s2">"I like cookies!"</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"items"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+  </span><span class="s2">"locale"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sv-se"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"country"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SE"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"VAT"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"items"</span><span class="p">:</span><span class="w">
+  </span><span class="p">[</span><span class="w">
     </span><span class="p">{</span><span class="w">
-      </span><span class="s2">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Shiny new phone"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"productId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"32832849-23cc-550c-9456-06ea2ff0b55c"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"unitAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">250000</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"totalAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">500000</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"VAT"</span><span class="p">:</span><span class="w"> </span><span class="mi">125000</span><span class="w">
+      </span><span class="s2">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"MacBook Pro 15"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"productId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"13"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"unitAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">3400000</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"totalAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">3400000</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"VAT"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
     </span><span class="p">},</span><span class="w">
     </span><span class="p">{</span><span class="w">
-      </span><span class="s2">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"40</span><span class="se">\"</span><span class="s2"> TV"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"productId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"88624a25-e7e8-5da4-a819-8af8f5079ce2"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"unitAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">500000</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"totalAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">500000</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"VAT"</span><span class="p">:</span><span class="w"> </span><span class="mi">125000</span><span class="w">
+      </span><span class="s2">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"iPhone X"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"productId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"233"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"unitAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">1200000</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"totalAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">2400000</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"VAT"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
     </span><span class="p">}</span><span class="w">
-  </span><span class="p">]</span><span class="w">
+  </span><span class="p">],</span><span class="w">
+  </span><span class="s2">"partnerUrls"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"terms"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://www.example.se/terms"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"checkout"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://www.example.se/checkout"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"confirmation"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://www.example.se/confirmation"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"webhook"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://www.example.se/notification-hook"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
 </span><span class="p">}</span><span class="w">
 </span></code></pre>
 <div class="move-right">
   <h3>Response body</h3>
 </div>
 <pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
-  </span><span class="s2">"orderId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"c8e0bda3-dbe0-55ad-8de7-4b341fab49a3"</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"monthlyAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">50500</span><span class="w">
+  </span><span class="s2">"html"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;div id=’leasecloud_leaseflow_container’&gt;
+        &lt;script&gt;(function() {
+          // Some script to load the iframe into the page
+          var conf = {
+            orderID: '1293u924972439'
+          }
+          createElement(script)
+        })()&lt;/script&gt;
+        &lt;noscript&gt;Please &lt;a href=’https://enable-javascript.com/’&gt;enable javascript&lt;/a&gt;.&lt;/noscript&gt;
+      &lt;/div&gt;"</span><span class="w">
+  </span><span class="s2">"orderId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1293u924972439"</span><span class="p">,</span><span class="w">
 </span><span class="p">}</span><span class="w">
 </span></code></pre>
 <div class="move-right">
@@ -355,22 +391,20 @@ When you are becoming a partner we will give you a access token and a webhook to
     </span><span class="s2">"fields"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
       </span><span class="p">{</span><span class="w">
         </span><span class="s2">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"notNull Violation"</span><span class="p">,</span><span class="w">
-        </span><span class="s2">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"orderId cannot be null on orderId"</span><span class="p">,</span><span class="w">
-        </span><span class="s2">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"orderId"</span><span class="w">
+        </span><span class="s2">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"totalAmount cannot be null"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"totalAmount"</span><span class="w">
       </span><span class="p">},</span><span class="w">
-      </span><span class="p">{</span><span class="w">
-        </span><span class="s2">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"A valid organisation number is required e.g. xxxxxx-xxxx on orgNumber"</span><span class="p">,</span><span class="w">
-        </span><span class="s2">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"orgNumber"</span><span class="w">
-      </span><span class="p">}</span><span class="w">
     </span><span class="p">]</span><span class="w">
   </span><span class="p">}</span><span class="w">
 </span><span class="p">}</span><span class="w">
 </span></code></pre>
 <h3 id="http-request">HTTP Request</h3>
 
-<p><code class="prettyprint">POST /v1/orders</code></p>
+<p><code class="prettyprint">POST /v1/orders?live=checkout-mock</code></p>
 
-<h3 id="order-object">Order object</h3>
+<h3 id="http-body">HTTP Body</h3>
+
+<p>The body of the http request contains the order information.</p>
 
 <table><thead>
 <tr>
@@ -381,58 +415,34 @@ When you are becoming a partner we will give you a access token and a webhook to
 </tr>
 </thead><tbody>
 <tr>
-<td>orderId</td>
-<td>string</td>
+<td>partnerUrls</td>
+<td>object</td>
 <td>✔︎</td>
-<td>A unique ID for the order</td>
+<td>An object containing urls to the relevant partner pages</td>
 </tr>
 <tr>
-<td>firstName</td>
+<td>• terms</td>
 <td>string</td>
 <td>✔︎</td>
-<td>Given name</td>
+<td>The terms and conditions url</td>
 </tr>
 <tr>
-<td>lastName</td>
+<td>• checkout</td>
 <td>string</td>
 <td>✔︎</td>
-<td>Family name</td>
+<td>The checkout page url</td>
 </tr>
 <tr>
-<td>company</td>
+<td>• confirmation</td>
 <td>string</td>
 <td>✔︎</td>
-<td>Name of the company</td>
+<td>The confirmation page url</td>
 </tr>
 <tr>
-<td>orgNumber</td>
+<td>• webhook</td>
 <td>string</td>
 <td>✔︎</td>
-<td>Company organisation number 000000-0000</td>
-</tr>
-<tr>
-<td>email</td>
-<td>string</td>
-<td>✔︎</td>
-<td>Valid email address</td>
-</tr>
-<tr>
-<td>authorizedSignatory</td>
-<td>string</td>
-<td></td>
-<td>Email of the person authorized to sign the contract</td>
-</tr>
-<tr>
-<td>phone</td>
-<td>string</td>
-<td>✔︎</td>
-<td>Phone number</td>
-</tr>
-<tr>
-<td>customerIp</td>
-<td>string</td>
-<td>✔︎</td>
-<td>IP of the customer (for extra fraud check)</td>
+<td>The notification webhook url</td>
 </tr>
 <tr>
 <td>totalAmount</td>
@@ -465,124 +475,22 @@ When you are becoming a partner we will give you a access token and a webhook to
 <td>In which currency is the amounts. We only support <code class="prettyprint">SEK</code> at the moment</td>
 </tr>
 <tr>
+<td>locale</td>
+<td>enum</td>
+<td>✔︎</td>
+<td>Purchase language string compliant with RFC 1766</td>
+</tr>
+<tr>
+<td>country</td>
+<td>enum</td>
+<td>✔︎</td>
+<td>The purchase country 2 letter code e.g. SE</td>
+</tr>
+<tr>
 <td>months</td>
 <td>integer</td>
-<td>✔︎</td>
-<td>How many months the customer want to lease for</td>
-</tr>
-<tr>
-<td>tariff</td>
-<td>decimal</td>
-<td>✔︎</td>
-<td>What was the current tariff when the purchase</td>
-</tr>
-<tr>
-<td>billing</td>
-<td>object</td>
-<td>✔︎</td>
-<td>An object containing the billing fields below</td>
-</tr>
-<tr>
-<td>• address</td>
-<td>string</td>
-<td>✔︎</td>
-<td>The street address</td>
-</tr>
-<tr>
-<td>• address2</td>
-<td>string</td>
 <td></td>
-<td>Second street address line</td>
-</tr>
-<tr>
-<td>• city</td>
-<td>string</td>
-<td>✔︎</td>
-<td>City</td>
-</tr>
-<tr>
-<td>• state</td>
-<td>string</td>
-<td></td>
-<td>State if applicable</td>
-</tr>
-<tr>
-<td>• postalCode</td>
-<td>string</td>
-<td>✔︎</td>
-<td>Postal code</td>
-</tr>
-<tr>
-<td>• country</td>
-<td>string</td>
-<td>✔︎</td>
-<td>Country 2 letter code e.g. SE</td>
-</tr>
-<tr>
-<td>shipping</td>
-<td>object</td>
-<td></td>
-<td>An object containing the sipping fields below</td>
-</tr>
-<tr>
-<td>• firstName</td>
-<td>string</td>
-<td></td>
-<td>Given name</td>
-</tr>
-<tr>
-<td>• lastName</td>
-<td>string</td>
-<td></td>
-<td>Family name</td>
-</tr>
-<tr>
-<td>• company</td>
-<td>string</td>
-<td></td>
-<td>Company name</td>
-</tr>
-<tr>
-<td>• address</td>
-<td>string</td>
-<td></td>
-<td>Street address</td>
-</tr>
-<tr>
-<td>• address2</td>
-<td>string</td>
-<td></td>
-<td>Street address line 2</td>
-</tr>
-<tr>
-<td>• city</td>
-<td>string</td>
-<td></td>
-<td>City</td>
-</tr>
-<tr>
-<td>• state</td>
-<td>string</td>
-<td></td>
-<td>State if applicable</td>
-</tr>
-<tr>
-<td>• postalCode</td>
-<td>string</td>
-<td></td>
-<td>Postal code</td>
-</tr>
-<tr>
-<td>• country</td>
-<td>string</td>
-<td></td>
-<td>Country 2 letter code e.g. SE</td>
-</tr>
-<tr>
-<td>customerMessage</td>
-<td>string</td>
-<td></td>
-<td>If the user left a custom message</td>
+<td>The leasing period in months, if known</td>
 </tr>
 <tr>
 <td>items</td>
@@ -638,30 +546,377 @@ When you are becoming a partner we will give you a access token and a webhook to
 <td>✔︎</td>
 <td>VAT for the total amount</td>
 </tr>
+</tbody></table>
+
+<h3 id="http-response">HTTP Response</h3>
+
+<table><thead>
 <tr>
-<td>sku</td>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>html</td>
 <td>string</td>
-<td></td>
-<td>Stock Keeping Unit</td>
+<td>The HTML snippet to load the checkout iframe</td>
 </tr>
 <tr>
-<td>variationId</td>
+<td>orderId</td>
 <td>string</td>
-<td></td>
-<td>Variation id</td>
-</tr>
-<tr>
-<td>serialNumber</td>
-<td>string</td>
-<td></td>
-<td>Serial number of the product</td>
+<td>The leasecloud order id</td>
 </tr>
 </tbody></table>
 
-<!-- -->
+<h2 id="checkout-api-update-end-point">Checkout API update end point</h2>
+<pre class="highlight http tab-http"><code><span class="nf">POST</span> <span class="nn">/v1/orders/{orderId}</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Content-Type</span><span class="p">:</span> <span class="s">application/json</span>
+<span class="na">Authorization</span><span class="p">:</span> <span class="s">Bearer [bearer token]</span>
+</code></pre>
+<div class="move-right">
+  <h3>Request body example</h3>
+</div>
+<pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+  </span><span class="s2">"totalAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">12000</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"shippingAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"shippingVAT"</span><span class="p">:</span><span class="w"> </span><span class="err">'</span><span class="mi">0</span><span class="err">'</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SEK"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"locale"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sv-se"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"country"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SE"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"VAT"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"items"</span><span class="p">:</span><span class="w">
+  </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="s2">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"MacBook Pro 15"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"productId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"13"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"unitAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">3400000</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"totalAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">3400000</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"VAT"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="s2">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"iPhone X"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"productId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"233"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"unitAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">1200000</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"totalAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">2400000</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"VAT"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">],</span><span class="w">
+  </span><span class="s2">"partnerUrls"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"terms"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://www.example.se/terms"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"checkout"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://www.example.se/checkout"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"confirmation"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://www.example.se/confirmation"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"webhook"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://www.example.se/notification-hook"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+<div class="move-right">
+  <h3>Response body</h3>
+</div>
+<pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+  </span><span class="s2">"html"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;div id=’leasecloud_leaseflow_container’&gt;
+        &lt;script&gt;(function() {
+          // Some script to load the iframe into the page
+          var conf = {
+            orderID: '1293u924972439'
+          }
+          createElement(script)
+        })()&lt;/script&gt;
+        &lt;noscript&gt;Please &lt;a href=’https://enable-javascript.com/’&gt;enable javascript&lt;/a&gt;.&lt;/noscript&gt;
+      &lt;/div&gt;"</span><span class="w">
+  </span><span class="s2">"orderId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1293u924972439"</span><span class="p">,</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+<div class="move-right">
+  <h3>Error response body</h3>
+</div>
+<pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+  </span><span class="s2">"error"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"InvalidOrder"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Validation error"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"fields"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="s2">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"notNull Violation"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"totalAmount cannot be null"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"totalAmount"</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+    </span><span class="p">]</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+<h3 id="http-request">HTTP Request</h3>
+
+<p><code class="prettyprint">POST /v1/orders/{orderId}</code></p>
+
+<h3 id="http-body">HTTP Body</h3>
+
+<p>The body of the http request contains the order information.</p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>partnerUrls</td>
+<td>object</td>
+<td>✔︎</td>
+<td>An object containing urls to the relevant partner pages</td>
+</tr>
+<tr>
+<td>• terms</td>
+<td>string</td>
+<td>✔︎</td>
+<td>The terms and conditions url</td>
+</tr>
+<tr>
+<td>• checkout</td>
+<td>string</td>
+<td>✔︎</td>
+<td>The checkout page url</td>
+</tr>
+<tr>
+<td>• confirmation</td>
+<td>string</td>
+<td>✔︎</td>
+<td>The confirmation page url</td>
+</tr>
+<tr>
+<td>• webhook</td>
+<td>string</td>
+<td>✔︎</td>
+<td>The notification webhook url</td>
+</tr>
+<tr>
+<td>totalAmount</td>
+<td>integer</td>
+<td>✔︎</td>
+<td>Total amount the customer will pay Ex. VAT <br> Minimum 6000 * 100</td>
+</tr>
+<tr>
+<td>VAT</td>
+<td>integer</td>
+<td>✔︎</td>
+<td>Total VAT amount</td>
+</tr>
+<tr>
+<td>shippingAmount</td>
+<td>integer</td>
+<td>✔︎</td>
+<td>The shipping cost</td>
+</tr>
+<tr>
+<td>shippingVAT</td>
+<td>integer</td>
+<td>✔︎</td>
+<td>The shipping cost VAT</td>
+</tr>
+<tr>
+<td>currency</td>
+<td>enum</td>
+<td>✔︎</td>
+<td>In which currency is the amounts. We only support <code class="prettyprint">SEK</code> at the moment</td>
+</tr>
+<tr>
+<td>locale</td>
+<td>enum</td>
+<td>✔︎</td>
+<td>Purchase language string compliant with RFC 1766</td>
+</tr>
+<tr>
+<td>country</td>
+<td>enum</td>
+<td>✔︎</td>
+<td>The purchase country 2 letter code e.g. SE</td>
+</tr>
+<tr>
+<td>months</td>
+<td>integer</td>
+<td></td>
+<td>The leasing period in months, if known</td>
+</tr>
+<tr>
+<td>items</td>
+<td>Item object</td>
+<td>✔︎</td>
+<td>See below</td>
+</tr>
+</tbody></table>
+
+<h3 id="item-object">Item object</h3>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>name</td>
+<td>string</td>
+<td>✔︎</td>
+<td>Name / title of the product</td>
+</tr>
+<tr>
+<td>productId</td>
+<td>string</td>
+<td>✔︎</td>
+<td>Product id</td>
+</tr>
+<tr>
+<td>quantity</td>
+<td>integer</td>
+<td>✔︎</td>
+<td>Quantity</td>
+</tr>
+<tr>
+<td>unitAmount</td>
+<td>integer</td>
+<td>✔︎</td>
+<td>Price for a single unit ex VAT</td>
+</tr>
+<tr>
+<td>totalAmount</td>
+<td>integer</td>
+<td>✔︎</td>
+<td>Total amount (quantity * unitAmount) ex VAT</td>
+</tr>
+<tr>
+<td>VAT</td>
+<td>integer</td>
+<td>✔︎</td>
+<td>VAT for the total amount</td>
+</tr>
+</tbody></table>
+
+<h3 id="http-response">HTTP Response</h3>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>html</td>
+<td>string</td>
+<td>The HTML snippet to load the checkout iframe</td>
+</tr>
+<tr>
+<td>orderId</td>
+<td>string</td>
+<td>The leasecloud order id</td>
+</tr>
+</tbody></table>
+
+          <h1 id="orders">Orders</h1>
+
+<p>Orders api provides the end points for retreiving and manipulating orders after they have been added to leasecloud via the checkout api.</p>
+
+<p>The url to staging is https://api.staging.leasecloud.com</p>
+<pre class="highlight http tab-http"><code><span class="nf">GET</span> <span class="nn">/v2/orders</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Content-Type</span><span class="p">:</span> <span class="s">application/json</span>
+<span class="na">Authorization</span><span class="p">:</span> <span class="s">Bearer [bearer token]</span>
+</code></pre>
+<div class="move-right">
+  <h3>Response body</h3>
+</div>
+<pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+  </span><span class="s2">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"c1f0acd8-8e3e-4477-85d3-18337c3c92d6"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"orgNumber"</span><span class="p">:</span><span class="w"> </span><span class="s2">"5590894308"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"PENDING"</span><span class="w">
+  </span><span class="s2">"totalAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">23323</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"VAT"</span><span class="p">:</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"shippingAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"shippingVAT"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SEK"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"months"</span><span class="p">:</span><span class="w"> </span><span class="mi">24</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"billing"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"firstName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Ora"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"lastName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Roob"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Myrtice70@yahoo.com"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"phone"</span><span class="p">:</span><span class="w"> </span><span class="s2">"(719) 365-7934 x29126"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"company"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Langosh, Kautzer and Ullrich"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"address"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1532 Edna Spring"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"address2"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"city"</span><span class="p">:</span><span class="w"> </span><span class="s2">"East Guidofort"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"postalCode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"17875"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"country"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SE"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="s2">"shipping"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"firstName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Brigitte"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"lastName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Wunsch"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Jon60@gmail.com"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"phone"</span><span class="p">:</span><span class="w"> </span><span class="s2">"803-546-0329"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"company"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Volkman - Goodwin"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"address"</span><span class="p">:</span><span class="w"> </span><span class="s2">"46995 Sandra Green"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"address2"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"city"</span><span class="p">:</span><span class="w"> </span><span class="s2">"South Aileenfurt"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"postalCode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"47920"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"country"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SE"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="s2">"items"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="s2">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"MacBook Pro 15"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"productId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"13"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"unitAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">3400000</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"totalAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">3400000</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"VAT"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="s2">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"iPhone X"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"productId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"233"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"unitAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">1200000</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"totalAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">2400000</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"VAT"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">],</span><span class="w">
+  </span><span class="s2">"createdAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2018-01-03T15:10:00.000Z"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"updatedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2018-01-03T15:10:00.000Z"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+<h2 id="retrieve-an-order">Retrieve an order</h2>
+
+<p>To retrieve a order after checkout has been completed make a <code class="prettyprint">GET</code> request <code class="prettyprint">/v2/orders/{orderId}</code></p>
+
+<p>An order information will be returned, including it&rsquo;s current status. See example on right.</p>
+
+<h3 id="order-statuses">Order statuses</h3>
+
+<table><thead>
+<tr>
+<th>Status</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>PENDING</td>
+<td>The order has been received but the customer has not signed or the leasing company has not yet authorized the transaction. The order should not be shipped</td>
+</tr>
+<tr>
+<td>OK</td>
+<td>All requirements have been forfilled and the order can be shipped</td>
+</tr>
+<tr>
+<td>CANCELLED</td>
+<td>The order has been cancelled</td>
+</tr>
+</tbody></table>
 
 <h2 id="cancel-an-order">Cancel an order</h2>
-<pre class="highlight http tab-http"><code><span class="nf">POST</span> <span class="nn">/v1/orders/{orderId}/cancel</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<pre class="highlight http tab-http"><code><span class="nf">POST</span> <span class="nn">/v2/orders/{orderId}/cancel</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
 <span class="na">Authorization</span><span class="p">:</span> <span class="s">Bearer [bearer token]</span>
 </code></pre>
 <p>To cancel an order make a <code class="prettyprint">POST</code> request <code class="prettyprint">/v1/orders/{orderId}/cancel</code>
@@ -670,7 +925,7 @@ which will respond with 200 and an empty body</p>
 <p>An order can be canceled until the user has signed the order</p>
 
 <h2 id="order-shipped">Order shipped</h2>
-<pre class="highlight http tab-http"><code><span class="nf">POST</span> <span class="nn">/v1/orders/{orderId}/shipped</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<pre class="highlight http tab-http"><code><span class="nf">POST</span> <span class="nn">/v2/orders/{orderId}/shipped</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
 <span class="na">Authorization</span><span class="p">:</span> <span class="s">Bearer [bearer token]</span>
 </code></pre>
 <div class="move-right">
@@ -687,97 +942,6 @@ and time but you can send the body <code class="prettyprint">shippedAt</code> an
 <p>We will then send a confirmation email where the customer sign that they
 have received the package and the order is completed.</p>
 
-<h2 id="get-order-status">Get order status</h2>
-<pre class="highlight http tab-http"><code><span class="nf">GET</span> <span class="nn">/v1/orders/{orderId}/status</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
-<span class="na">Authorization</span><span class="p">:</span> <span class="s">Bearer [bearer token]</span>
-</code></pre><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
-  </span><span class="s2">"statuses"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
-    </span><span class="p">{</span><span class="w">
-      </span><span class="s2">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ACCEPTED"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"setAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2017-10-04T13:55:16.000Z"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"message"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="w">
-    </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w">
-      </span><span class="s2">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SIGNED"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"setAt"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"message"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="w">
-    </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w">
-      </span><span class="s2">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SHIPPED"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"setAt"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"message"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="w">
-    </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w">
-      </span><span class="s2">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"DELIVERY_APPROVED"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"setAt"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"message"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="w">
-    </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w">
-      </span><span class="s2">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"DECLINED"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"setAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2017-10-05T13:37:12.000Z"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Not credit worthy"</span><span class="w">
-    </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w">
-      </span><span class="s2">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CANCELLED"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"setAt"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"message"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-  </span><span class="p">]</span><span class="w">
-</span><span class="p">}</span><span class="w">
-</span></code></pre>
-<p>Get the current status for an order</p>
-
-<table><thead>
-<tr>
-<th>Status</th>
-<th>Description</th>
-</tr>
-</thead><tbody>
-<tr>
-<td>ACCEPTED</td>
-<td>The order has been accepted and are waiting for the customer to sign the agreement</td>
-</tr>
-<tr>
-<td>SIGNED</td>
-<td>The customer has signed and the order can be shipped</td>
-</tr>
-<tr>
-<td>DELIVERY_APPROVED</td>
-<td>The customer has signed that the order has arrived</td>
-</tr>
-<tr>
-<td>DECLINED</td>
-<td>The order has been declined</td>
-</tr>
-<tr>
-<td>CANCELLED</td>
-<td>The order has been cancelled</td>
-</tr>
-</tbody></table>
-
-          <h1 id="config">Config</h1>
-
-<h2 id="get-current-config">Get current config</h2>
-<pre class="highlight http tab-http"><code><span class="nf">GET</span> <span class="nn">/v1/config</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
-<span class="na">Authorization</span><span class="p">:</span> <span class="s">Bearer [bearer token]</span>
-</code></pre>
-<div class="move-right">
-  <h3>Response body</h3>
-</div>
-<pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
-  </span><span class="s2">"financeCompany"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="s2">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Montly Leasing"</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"logo"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://example.com/logo.svg"</span><span class="w">
-  </span><span class="p">},</span><span class="w">
-  </span><span class="s2">"tariffs"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">  
-    </span><span class="p">{</span><span class="w">  
-      </span><span class="s2">"months"</span><span class="p">:</span><span class="w"> </span><span class="mi">24</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"tariff"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.47</span><span class="w">
-    </span><span class="p">},</span><span class="w">
-    </span><span class="p">{</span><span class="w">  
-      </span><span class="s2">"months"</span><span class="p">:</span><span class="w"> </span><span class="mi">36</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"tariff"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.04</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-  </span><span class="p">]</span><span class="w">
-</span><span class="p">}</span><span class="w">
-</span></code></pre>
-<p>Config contains tariffs and info about the finance company</p>
-
           <h1 id="webhooks">Webhooks</h1>
 <pre class="highlight http tab-http"><code><span class="nf">POST</span> <span class="nn">https://example.com/my/callback/</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
 <span class="na">LeaseCloud-Version</span><span class="p">:</span> <span class="s">1.0.0</span>
@@ -790,91 +954,18 @@ have received the package and the order is completed.</p>
     "FIELDS": "FOR ACTION"
   }
 }
-</code></pre><pre class="highlight php tab-php"><code><span class="cp">&lt;?php</span> <span class="nb">hash_hmac</span><span class="p">(</span><span class="s2">"sha256"</span><span class="p">,</span> <span class="s2">"${TIMESTAMP}.${PAYLOAD}"</span><span class="p">,</span> <span class="nx">WEBHOOK_SECRET</span><span class="p">);</span>
 </code></pre>
-<p>When becoming a partner we will ask for a url endpoint where we will make post requests to with updates.</p>
+<p>/mock/:id/webhook</p>
+<pre class="highlight php tab-php"><code><span class="cp">&lt;?php</span> <span class="nb">hash_hmac</span><span class="p">(</span><span class="s2">"sha256"</span><span class="p">,</span> <span class="s2">"${TIMESTAMP}.${PAYLOAD}"</span><span class="p">,</span> <span class="nx">WEBHOOK_SECRET</span><span class="p">);</span>
+</code></pre>
+<h2 id="order-status-updated">Order status updated</h2>
 
-<p>We will make a <code class="prettyprint">POST</code> request to the endpoint with a JSON body</p>
+<p>We will make a <code class="prettyprint">POST</code> request to the endpoint provided in the initial checkout request every time the order status updated.</p>
 
-<p>The signature is with generated with the timestamp found in the <code class="prettyprint">LeaseCloud-Signature</code> header combined with a <code class="prettyprint">.</code> and the <code class="prettyprint">payload</code></p>
+<p>The signature is generated with the timestamp found in the <code class="prettyprint">LeaseCloud-Signature</code> header combined with a <code class="prettyprint">.</code> and the <code class="prettyprint">payload</code></p>
 
-<p>We will make up 12 attempts to deliver the webhook with exponential delay up to 7 days from first try.
+<p>We will repeatedly call the webhook
 Returns 200 http status for success else we are assuming it failed.</p>
-
-<h3 id="events">Events</h3>
-
-<ul>
-<li>order.accepted</li>
-<li>order.declined</li>
-<li>order.signed</li>
-<li>order.deliveryApproved</li>
-<li>tariff.updated</li>
-</ul>
-
-<h3 id="order-accepted">Order accepted</h3>
-<pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
-  </span><span class="s2">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"evt:sdfgkjshdfg87oihsjdgfb"</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"order.accepted"</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="s2">"orderId"</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span><span class="w">
-  </span><span class="p">}</span><span class="w">
-</span><span class="p">}</span><span class="w">
-</span></code></pre>
-<p>When we have accepted an order and awaiting the customer to sign the agreement</p>
-
-<h3 id="order-declined">Order declined</h3>
-<pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
-  </span><span class="s2">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"evt:askjshdfg54fsjdgfb"</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"order.declined"</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="s2">"orderId"</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"reason"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Customer is not credit worthy"</span><span class="w">
-  </span><span class="p">}</span><span class="w">
-</span><span class="p">}</span><span class="w">
-</span></code></pre>
-<p>The order is declined</p>
-
-<h3 id="order-signed">Order signed</h3>
-<pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
-  </span><span class="s2">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"evt:sdfgkjshdfg87oihsjdgfb"</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"order.signed"</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="s2">"orderId"</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span><span class="w">
-  </span><span class="p">}</span><span class="w">
-</span><span class="p">}</span><span class="w">
-</span></code></pre>
-<p>The customer has signed and the shop can ship the products</p>
-
-<h3 id="order-delivery-has-been-approved">Order delivery has been approved</h3>
-<pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
-  </span><span class="s2">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"evt:sdfgkjshdfg87oihsjdgfb"</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"order.deliveryApproved"</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="s2">"orderId"</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span><span class="w">
-  </span><span class="p">}</span><span class="w">
-</span><span class="p">}</span><span class="w">
-</span></code></pre>
-<p>The customer has confirmed that the products has arrived</p>
-
-<h3 id="updated-tariffs">Updated tariffs</h3>
-<pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
-  </span><span class="s2">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"evt:dsfsdf55ds3dgfb"</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"tariff.updated"</span><span class="p">,</span><span class="w">
-  </span><span class="s2">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="s2">"tariffs"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">  
-      </span><span class="p">{</span><span class="w">  
-        </span><span class="s2">"months"</span><span class="p">:</span><span class="w"> </span><span class="mi">24</span><span class="p">,</span><span class="w">
-        </span><span class="s2">"tariff"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.51</span><span class="w">
-      </span><span class="p">},</span><span class="w">
-      </span><span class="p">{</span><span class="w">  
-        </span><span class="s2">"months"</span><span class="p">:</span><span class="w"> </span><span class="mi">36</span><span class="p">,</span><span class="w">
-        </span><span class="s2">"tariff"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.01</span><span class="w">
-      </span><span class="p">}</span><span class="w">
-    </span><span class="p">]</span><span class="w">
-  </span><span class="p">}</span><span class="w">
-</span><span class="p">}</span><span class="w">
-</span></code></pre>
-<p>When the tariff changes</p>
 
           <h1 id="errors">Errors</h1>
 <pre class="highlight json tab-json"><code><span class="w">
@@ -918,13 +1009,8 @@ Returns 200 http status for success else we are assuming it failed.</p>
     </span><span class="s2">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Validation error"</span><span class="p">,</span><span class="w">
     </span><span class="s2">"fields"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
       </span><span class="p">{</span><span class="w">
-        </span><span class="s2">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"billing.address"</span><span class="p">,</span><span class="w">
-        </span><span class="s2">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"billing.address can't be null"</span><span class="w">
-      </span><span class="p">},</span><span class="w">
-      </span><span class="p">{</span><span class="w">
-        </span><span class="s2">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"orgNumber"</span><span class="p">,</span><span class="w">
-        </span><span class="s2">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"OrgNumberNotFound"</span><span class="p">,</span><span class="w">
-        </span><span class="s2">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"xxxxxx-xxxx is not a registered organization number"</span><span class="w">
+        </span><span class="s2">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"totalAmount cannot be null"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"field"</span><span class="p">:</span><span class="w"> </span><span class="s2">"totalAmount"</span><span class="w">
       </span><span class="p">}</span><span class="w">
     </span><span class="p">]</span><span class="w">
   </span><span class="p">}</span><span class="w">

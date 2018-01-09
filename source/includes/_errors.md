@@ -39,13 +39,8 @@ The error object will always contain `code` and `message` and in the case of
     "message": "Validation error",
     "fields": [
       {
-        "field": "billing.address",
-        "message": "billing.address can't be null"
-      },
-      {
-        "field": "orgNumber",
-        "code": "OrgNumberNotFound",
-        "message": "xxxxxx-xxxx is not a registered organization number"
+        "message": "totalAmount cannot be null",
+        "field": "totalAmount"
       }
     ]
   }

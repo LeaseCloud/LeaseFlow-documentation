@@ -1,5 +1,9 @@
 # Orders
 
+Orders api provides the end points for retreiving and manipulating orders after they have been added to leasecloud via the checkout api.
+
+The url to staging is https://api.staging.leasecloud.com
+
 ```http
 GET /v2/orders HTTP/1.1
 Content-Type: application/json
@@ -69,9 +73,9 @@ Authorization: Bearer [bearer token]
   "updatedAt": "2018-01-03T15:10:00.000Z"
 }
 ```
-## Retreive an order
+## Retrieve an order
 
-To retreive a order after checkout has been completed make a `GET` request `/v2/orders/{orderId}`
+To retrieve a order after checkout has been completed make a `GET` request `/v2/orders/{orderId}`
 
 An order information will be returned, including it's current status. See example on right.
 
@@ -87,7 +91,7 @@ CANCELLED | The order has been cancelled
 ## Cancel an order
 
 ```http
-POST /v1/orders/{orderId}/cancel HTTP/1.1
+POST /v2/orders/{orderId}/cancel HTTP/1.1
 Authorization: Bearer [bearer token]
 ```
 
@@ -100,7 +104,7 @@ An order can be canceled until the user has signed the order
 ## Order shipped
 
 ```http
-POST /v1/orders/{orderId}/shipped HTTP/1.1
+POST /v2/orders/{orderId}/shipped HTTP/1.1
 Authorization: Bearer [bearer token]
 ```
 
@@ -121,54 +125,3 @@ and time but you can send the body `shippedAt` and ISO-8601 date to override the
 We will then send a confirmation email where the customer sign that they
 have received the package and the order is completed.
 
-
-## Get order status
-
-DO WE NEED THIS ? SHOULD THIS BE the
-
-```http
-GET /v1/orders/{orderId}/status HTTP/1.1
-Authorization: Bearer [bearer token]
-```
-
-```json
-{
-  "statuses": [
-    {
-      "code": "ACCEPTED",
-      "setAt": "2017-10-04T13:55:16.000Z",
-      "message": null
-    }, {
-      "code": "SIGNED",
-      "setAt": null,
-      "message": null
-    }, {
-      "code": "SHIPPED",
-      "setAt": null,
-      "message": null
-    }, {
-      "code": "DELIVERY_APPROVED",
-      "setAt": null,
-      "message": null
-    }, {
-      "code": "DECLINED",
-      "setAt": "2017-10-05T13:37:12.000Z",
-      "message": "Not credit worthy"
-    }, {
-      "code": "CANCELLED",
-      "setAt": null,
-      "message": null
-    }
-  ]
-}
-```
-
-Get the current status for an order
-
-Status | Description
------- | -----------
-ACCEPTED | The order has been accepted and are waiting for the customer to sign the agreement
-SIGNED | The customer has signed and the order can be shipped
-DELIVERY_APPROVED | The customer has signed that the order has arrived
-DECLINED | The order has been declined
-CANCELLED | The order has been cancelled
