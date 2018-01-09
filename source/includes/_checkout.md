@@ -14,7 +14,6 @@ Page | Description
 Checkout page | A URL to the page used to embed the LeaseCloud checkout. Includes a div that will be populated with HTML code received from the LeaseCloud checkout api.
 Confirmation page | A URL to the page the LeaseCloud checkout will redirect to when the checkout process completes. Includes a div that will be populated with HTML code received from the LeaseCloud checkout api.
 Notification WebHook URL | A URL that LeaseCloud will use to post information back to the partner regarding the status of different orders
-Terms
 Terms and conditions page | A URL to the partners terms and conditions that any customer agrees to by purchasing via their site
 
 ## Starting the checkout process
