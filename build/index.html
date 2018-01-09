@@ -960,12 +960,11 @@ have received the package and the order is completed.</p>
 </code></pre>
 <h2 id="order-status-updated">Order status updated</h2>
 
-<p>We will make a <code class="prettyprint">POST</code> request to the endpoint provided in the initial checkout request every time the order status updated.</p>
+<p>We will make a <code class="prettyprint">POST</code> request to the endpoint provided in the initial checkout request every time the order status is updated.</p>
 
 <p>The signature is generated with the timestamp found in the <code class="prettyprint">LeaseCloud-Signature</code> header combined with a <code class="prettyprint">.</code> and the <code class="prettyprint">payload</code></p>
 
-<p>We will repeatedly call the webhook
-Returns 200 http status for success else we are assuming it failed.</p>
+<p>The webhook will be repeatedly called until the partner acknowledges receipt. Acknowledgement is achieved by the store replying to the webhook with a 200 response, and a json object containing the leasecloud orderid and optionally the partners id for the order.</p>
 
           <h1 id="errors">Errors</h1>
 <pre class="highlight json tab-json"><code><span class="w">
