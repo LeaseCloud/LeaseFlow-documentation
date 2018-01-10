@@ -15,7 +15,6 @@ Page | Description
 ------ | -----------
 Checkout page | A URL to the page used to embed the LeaseCloud checkout. Includes a div that will be populated with HTML code received from the LeaseCloud checkout api.
 Confirmation page | A URL to the page the LeaseCloud checkout will redirect to when the checkout process completes. Includes a div that will be populated with HTML code received from the LeaseCloud checkout api.
-Notification WebHook URL | A URL that LeaseCloud will use to post information back to the partner regarding the status of different orders
 Terms and conditions page | A URL to the partners terms and conditions that any customer agrees to by purchasing via their site
 
 ## Starting the checkout process
@@ -56,6 +55,7 @@ Authorization: Bearer [bearer token]
   "locale": "sv-se",
   "country": "SE",
   "VAT": 0,
+  "months": 24,
   "items":
   [
     {
@@ -78,8 +78,7 @@ Authorization: Bearer [bearer token]
   "partnerUrls": {
     "terms": "https://www.example.se/terms",
     "checkout": "https://www.example.se/checkout",
-    "confirmation": "https://www.example.se/confirmation",
-    "webhook": "https://www.example.se/notification-hook"
+    "confirmation": "https://www.example.se/confirmation"
   }
 }
 ```
@@ -126,7 +125,7 @@ Authorization: Bearer [bearer token]
 
 ### HTTP Request
 
-`POST /v1/orders?live=checkout-mock`
+`POST /v1/orders`
 
 ### HTTP Body
 
@@ -188,6 +187,7 @@ Authorization: Bearer [bearer token]
   "locale": "sv-se",
   "country": "SE",
   "VAT": 0,
+  "months": 36,
   "items":
   [
     {
@@ -210,8 +210,7 @@ Authorization: Bearer [bearer token]
   "partnerUrls": {
     "terms": "https://www.example.se/terms",
     "checkout": "https://www.example.se/checkout",
-    "confirmation": "https://www.example.se/confirmation",
-    "webhook": "https://www.example.se/notification-hook"
+    "confirmation": "https://www.example.se/confirmation"
   }
 }
 ```

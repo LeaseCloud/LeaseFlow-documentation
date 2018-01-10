@@ -95,7 +95,7 @@ POST /v2/orders/{orderId}/cancel HTTP/1.1
 Authorization: Bearer [bearer token]
 ```
 
-To cancel an order make a `POST` request `/v1/orders/{orderId}/cancel`
+To cancel an order make a `POST` request `/v2/orders/{orderId}/cancel`
 which will respond with 200 and an empty body
 
 An order can be canceled until the user has signed the order
@@ -118,7 +118,7 @@ Authorization: Bearer [bearer token]
 }
 ```
 
-Make a `POST` request to `/v1/orders/{orderId}/shipped` when an order has been shipped.
+Make a `POST` request to `/v2/orders/{orderId}/shipped` when an order has been shipped.
 When the request is received we will set the current time as the shipped date
 and time but you can send the body `shippedAt` and ISO-8601 date to override the date.
 

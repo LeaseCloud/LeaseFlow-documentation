@@ -19,7 +19,12 @@ LeaseCloud-Signature: t=1499785732,v1=[HMAC_SHA-256_PAYLOAD],v1=[HMAC_SHA-256_PA
 ```php
 <?php hash_hmac("sha256", "${TIMESTAMP}.${PAYLOAD}", WEBHOOK_SECRET);
 ```
+When becoming a partner we will ask for a url endpoint where we will make post requests to with updates.
 Webhooks are used to communicate events from leasecloud back to the partners site. They always contain the same datastructure.
+
+We will make a POST request to the endpoint with a JSON body
+
+The signature is generated with the timestamp found in the LeaseCloud-Signature header combined with a . and the payload.
 
 ## Order status updated
 <div class="move-right">
