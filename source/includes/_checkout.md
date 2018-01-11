@@ -61,6 +61,7 @@ Authorization: Bearer [bearer token]
     {
       "name": "MacBook Pro 15",
       "productId": "13",
+      "articleNr": "NCC-5347XF",
       "quantity": 1,
       "unitAmount": 3400000,
       "totalAmount": 3400000,
@@ -69,6 +70,7 @@ Authorization: Bearer [bearer token]
     {
       "name": "iPhone X",
       "productId": "233",
+      "articleNr": "ABC-53RF7XF",
       "quantity": 2,
       "unitAmount": 1200000,
       "totalAmount": 2400000,
@@ -150,10 +152,18 @@ items | Item object | ✔︎ | See below
 
 ### Item object
 
+The items object contains an array of items.
+
+#### Bundled items
+
+When items are part of a bundle, a bundle id should be created for the bundle and the bundle should be added to the items array as if it was a normal item. The items that make up the bundle should also be added to the array but with a 0 for toal cost and a bundle id attribute linking to the bundle.
+
 Parameter | Type        | Required | Description
 --------- | ----------- | -------- | -----------
 name | string | ✔︎ | Name / title of the product
 productId | string | ✔︎ | Product id
+articleNr | string | | Article number
+bundleId | string | | If the item is part of a bundle or is the bundle add the id
 quantity | integer | ✔︎ | Quantity
 unitAmount | integer | ✔︎ | Price for a single unit ex VAT
 totalAmount | integer | ✔︎ | Total amount (quantity * unitAmount) ex VAT
@@ -287,6 +297,8 @@ Parameter | Type        | Required | Description
 name | string | ✔︎ | Name / title of the product
 productId | string | ✔︎ | Product id
 quantity | integer | ✔︎ | Quantity
+articleNr | string | | Article number
+bundleId | string | | If the item is part of a bundle or is the bundle add the id
 unitAmount | integer | ✔︎ | Price for a single unit ex VAT
 totalAmount | integer | ✔︎ | Total amount (quantity * unitAmount) ex VAT
 VAT | integer | ✔︎ | VAT for the total amount

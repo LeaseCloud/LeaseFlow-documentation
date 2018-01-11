@@ -55,6 +55,7 @@ Authorization: Bearer [bearer token]
     {
       "name": "MacBook Pro 15",
       "productId": "13",
+      "articleNr": "NCC-5347XF",
       "quantity": 1,
       "unitAmount": 3400000,
       "totalAmount": 3400000,
@@ -63,6 +64,7 @@ Authorization: Bearer [bearer token]
     {
       "name": "iPhone X",
       "productId": "233",
+      "articleNr": "ABC-5347XF",
       "quantity": 2,
       "unitAmount": 1200000,
       "totalAmount": 2400000,
