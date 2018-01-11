@@ -141,7 +141,7 @@ Authorization: Bearer [bearer token]
 ```
 
 <div class="move-right">
-  <h3>(Optional) Request body example</h3>
+  <h3>Request body example</h3>
 </div>
 
 ```json
@@ -159,8 +159,9 @@ Make a `POST` request to `/v2/orders/{orderId}/serial-numbers` when the serial n
 Parameter | Type        | Required | Description
 --------- | ----------- | -------- | -----------
 serials | array | ✔︎ | An array of one or more serials
-trackingLink | string | | A link to the postal companies tracking page for this shippment
-trackingNr | string | | The tracking number for the package
+ • productId | string | ✔︎ | Product id
+ • description | string | ✔︎ | Product description
+ • serialNumber | string | ✔︎ | Product serial number
 
 
 
