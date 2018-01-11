@@ -117,7 +117,9 @@ Authorization: Bearer [bearer token]
 
 ```json
 {
-  "shippedAt": "2017-07-20T13:37:00.000Z"
+  "shippedAt": "2017-07-20T13:37:00.000Z",
+  "trackingLink": "https://some-postal.com/kolli/124258652346",
+	"trackingNr": "124258652346"
 }
 ```
 
@@ -125,6 +127,9 @@ Make a `POST` request to `/v2/orders/{orderId}/shipped` when an order has been s
 When the request is received we will set the current time as the shipped date
 and time but you can send the body `shippedAt` and ISO-8601 date to override the date.
 
-We will then send a confirmation email where the customer sign that they
-have received the package and the order is completed.
+Parameter | Type        | Required | Description
+--------- | ----------- | -------- | -----------
+shippedAt | string | | Date and time shipped ISO-8601
+trackingLink | string | | A link to the postal companies tracking page for this shippment
+trackingNr | string | | The tracking number for the package
 
