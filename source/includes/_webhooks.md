@@ -75,6 +75,7 @@ The signature is generated with the timestamp found in the LeaseCloud-Signature 
       {
         "name": "Towels",
         "productId": "23",
+        "articleNr": "NCC-5347XF",
         "quantity": 42,
         "unitAmount": 34,
         "totalAmount": 8400,
@@ -83,6 +84,7 @@ The signature is generated with the timestamp found in the LeaseCloud-Signature 
       {
         "name": "NOPE",
         "productId": "233",
+        "articleNr": "NCC-5347XF",
         "quantity": 42,
         "unitAmount": 34,
         "totalAmount": 8400,
