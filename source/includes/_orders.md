@@ -146,10 +146,10 @@ Authorization: Bearer [bearer token]
 
 ```json
 {
-  "serials: [{
-		productId: "13",
-		description: "MacBook Pro 15",
-		serialNumber: "C02SP3SRKJKNFVFB23"
+  "serials": [{
+		"productId": "13",
+		"description": "MacBook Pro 15",
+		"serialNumber": "C02SP3SRKJKNFVFB23"
 	}]
 }
 ```

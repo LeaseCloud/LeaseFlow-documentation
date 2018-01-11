@@ -295,10 +295,6 @@ When you are becoming a partner we will give you a access token and a webhook to
 <td>A URL to the page the LeaseCloud checkout will redirect to when the checkout process completes. Includes a div that will be populated with HTML code received from the LeaseCloud checkout api.</td>
 </tr>
 <tr>
-<td>Notification WebHook URL</td>
-<td>A URL that LeaseCloud will use to post information back to the partner regarding the status of different orders</td>
-</tr>
-<tr>
 <td>Terms and conditions page</td>
 <td>A URL to the partners terms and conditions that any customer agrees to by purchasing via their site</td>
 </tr>
@@ -337,11 +333,13 @@ The LeaseCloud orderID should be saved by the partner and connected to the check
   </span><span class="s2">"locale"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sv-se"</span><span class="p">,</span><span class="w">
   </span><span class="s2">"country"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SE"</span><span class="p">,</span><span class="w">
   </span><span class="s2">"VAT"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"months"</span><span class="p">:</span><span class="w"> </span><span class="mi">24</span><span class="p">,</span><span class="w">
   </span><span class="s2">"items"</span><span class="p">:</span><span class="w">
   </span><span class="p">[</span><span class="w">
     </span><span class="p">{</span><span class="w">
       </span><span class="s2">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"MacBook Pro 15"</span><span class="p">,</span><span class="w">
       </span><span class="s2">"productId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"13"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"articleNr"</span><span class="p">:</span><span class="w"> </span><span class="s2">"NCC-5347XF"</span><span class="p">,</span><span class="w">
       </span><span class="s2">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
       </span><span class="s2">"unitAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">3400000</span><span class="p">,</span><span class="w">
       </span><span class="s2">"totalAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">3400000</span><span class="p">,</span><span class="w">
@@ -350,6 +348,7 @@ The LeaseCloud orderID should be saved by the partner and connected to the check
     </span><span class="p">{</span><span class="w">
       </span><span class="s2">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"iPhone X"</span><span class="p">,</span><span class="w">
       </span><span class="s2">"productId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"233"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"articleNr"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ABC-53RF7XF"</span><span class="p">,</span><span class="w">
       </span><span class="s2">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">
       </span><span class="s2">"unitAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">1200000</span><span class="p">,</span><span class="w">
       </span><span class="s2">"totalAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">2400000</span><span class="p">,</span><span class="w">
@@ -359,8 +358,7 @@ The LeaseCloud orderID should be saved by the partner and connected to the check
   </span><span class="s2">"partnerUrls"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
     </span><span class="s2">"terms"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://www.example.se/terms"</span><span class="p">,</span><span class="w">
     </span><span class="s2">"checkout"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://www.example.se/checkout"</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"confirmation"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://www.example.se/confirmation"</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"webhook"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://www.example.se/notification-hook"</span><span class="w">
+    </span><span class="s2">"confirmation"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://www.example.se/confirmation"</span><span class="w">
   </span><span class="p">}</span><span class="w">
 </span><span class="p">}</span><span class="w">
 </span></code></pre>
@@ -400,7 +398,7 @@ The LeaseCloud orderID should be saved by the partner and connected to the check
 </span></code></pre>
 <h3 id="http-request">HTTP Request</h3>
 
-<p><code class="prettyprint">POST /v1/orders?live=checkout-mock</code></p>
+<p><code class="prettyprint">POST /v1/orders</code></p>
 
 <h3 id="http-body">HTTP Body</h3>
 
@@ -502,6 +500,12 @@ The LeaseCloud orderID should be saved by the partner and connected to the check
 
 <h3 id="item-object">Item object</h3>
 
+<p>The items object contains an array of items.</p>
+
+<h4 id="bundled-items">Bundled items</h4>
+
+<p>When items are part of a bundle, a bundle id should be created for the bundle and the bundle should be added to the items array as if it was a normal item. The items that make up the bundle should also be added to the array but with a 0 for toal cost and a bundle id attribute linking to the bundle.</p>
+
 <table><thead>
 <tr>
 <th>Parameter</th>
@@ -521,6 +525,18 @@ The LeaseCloud orderID should be saved by the partner and connected to the check
 <td>string</td>
 <td>✔︎</td>
 <td>Product id</td>
+</tr>
+<tr>
+<td>articleNr</td>
+<td>string</td>
+<td></td>
+<td>Article number</td>
+</tr>
+<tr>
+<td>bundleId</td>
+<td>string</td>
+<td></td>
+<td>If the item is part of a bundle or is the bundle add the id</td>
 </tr>
 <tr>
 <td>quantity</td>
@@ -585,6 +601,7 @@ The LeaseCloud orderID should be saved by the partner and connected to the check
   </span><span class="s2">"locale"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sv-se"</span><span class="p">,</span><span class="w">
   </span><span class="s2">"country"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SE"</span><span class="p">,</span><span class="w">
   </span><span class="s2">"VAT"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"months"</span><span class="p">:</span><span class="w"> </span><span class="mi">36</span><span class="p">,</span><span class="w">
   </span><span class="s2">"items"</span><span class="p">:</span><span class="w">
   </span><span class="p">[</span><span class="w">
     </span><span class="p">{</span><span class="w">
@@ -607,8 +624,7 @@ The LeaseCloud orderID should be saved by the partner and connected to the check
   </span><span class="s2">"partnerUrls"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
     </span><span class="s2">"terms"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://www.example.se/terms"</span><span class="p">,</span><span class="w">
     </span><span class="s2">"checkout"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://www.example.se/checkout"</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"confirmation"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://www.example.se/confirmation"</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"webhook"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://www.example.se/notification-hook"</span><span class="w">
+    </span><span class="s2">"confirmation"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://www.example.se/confirmation"</span><span class="w">
   </span><span class="p">}</span><span class="w">
 </span><span class="p">}</span><span class="w">
 </span></code></pre>
@@ -777,6 +793,18 @@ The LeaseCloud orderID should be saved by the partner and connected to the check
 <td>Quantity</td>
 </tr>
 <tr>
+<td>articleNr</td>
+<td>string</td>
+<td></td>
+<td>Article number</td>
+</tr>
+<tr>
+<td>bundleId</td>
+<td>string</td>
+<td></td>
+<td>If the item is part of a bundle or is the bundle add the id</td>
+</tr>
+<tr>
 <td>unitAmount</td>
 <td>integer</td>
 <td>✔︎</td>
@@ -869,6 +897,7 @@ The LeaseCloud orderID should be saved by the partner and connected to the check
     </span><span class="p">{</span><span class="w">
       </span><span class="s2">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"MacBook Pro 15"</span><span class="p">,</span><span class="w">
       </span><span class="s2">"productId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"13"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"articleNr"</span><span class="p">:</span><span class="w"> </span><span class="s2">"NCC-5347XF"</span><span class="p">,</span><span class="w">
       </span><span class="s2">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
       </span><span class="s2">"unitAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">3400000</span><span class="p">,</span><span class="w">
       </span><span class="s2">"totalAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">3400000</span><span class="p">,</span><span class="w">
@@ -877,6 +906,7 @@ The LeaseCloud orderID should be saved by the partner and connected to the check
     </span><span class="p">{</span><span class="w">
       </span><span class="s2">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"iPhone X"</span><span class="p">,</span><span class="w">
       </span><span class="s2">"productId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"233"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"articleNr"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ABC-5347XF"</span><span class="p">,</span><span class="w">
       </span><span class="s2">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">
       </span><span class="s2">"unitAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">1200000</span><span class="p">,</span><span class="w">
       </span><span class="s2">"totalAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">2400000</span><span class="p">,</span><span class="w">
@@ -910,6 +940,10 @@ The LeaseCloud orderID should be saved by the partner and connected to the check
 <td>All requirements have been forfilled and the order can be shipped</td>
 </tr>
 <tr>
+<td>DONE</td>
+<td>The order has been forfilled and the contract started, changes are no longer possible by the partner</td>
+</tr>
+<tr>
 <td>CANCELLED</td>
 <td>The order has been cancelled</td>
 </tr>
@@ -919,7 +953,7 @@ The LeaseCloud orderID should be saved by the partner and connected to the check
 <pre class="highlight http tab-http"><code><span class="nf">POST</span> <span class="nn">/v2/orders/{orderId}/cancel</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
 <span class="na">Authorization</span><span class="p">:</span> <span class="s">Bearer [bearer token]</span>
 </code></pre>
-<p>To cancel an order make a <code class="prettyprint">POST</code> request <code class="prettyprint">/v1/orders/{orderId}/cancel</code>
+<p>To cancel an order make a <code class="prettyprint">POST</code> request <code class="prettyprint">/v2/orders/{orderId}/cancel</code>
 which will respond with 200 and an empty body</p>
 
 <p>An order can be canceled until the user has signed the order</p>
@@ -932,39 +966,191 @@ which will respond with 200 and an empty body</p>
   <h3>(Optional) Request body example</h3>
 </div>
 <pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
-  </span><span class="s2">"shippedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2017-07-20T13:37:00.000Z"</span><span class="w">
+  </span><span class="s2">"shippedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2017-07-20T13:37:00.000Z"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"trackingLink"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://some-postal.com/kolli/124258652346"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"trackingNr"</span><span class="p">:</span><span class="w"> </span><span class="s2">"124258652346"</span><span class="w">
 </span><span class="p">}</span><span class="w">
 </span></code></pre>
-<p>Make a <code class="prettyprint">POST</code> request to <code class="prettyprint">/v1/orders/{orderId}/shipped</code> when an order has been shipped.
+<p>Make a <code class="prettyprint">POST</code> request to <code class="prettyprint">/v2/orders/{orderId}/shipped</code> when an order has been shipped.
 When the request is received we will set the current time as the shipped date
 and time but you can send the body <code class="prettyprint">shippedAt</code> and ISO-8601 date to override the date.</p>
 
-<p>We will then send a confirmation email where the customer sign that they
-have received the package and the order is completed.</p>
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>shippedAt</td>
+<td>string</td>
+<td></td>
+<td>Date and time shipped ISO-8601</td>
+</tr>
+<tr>
+<td>trackingLink</td>
+<td>string</td>
+<td></td>
+<td>A link to the postal companies tracking page for this shippment</td>
+</tr>
+<tr>
+<td>trackingNr</td>
+<td>string</td>
+<td></td>
+<td>The tracking number for the package</td>
+</tr>
+</tbody></table>
+
+<h2 id="order-serial-numbers">Order serial numbers</h2>
+<pre class="highlight http tab-http"><code><span class="nf">POST</span> <span class="nn">/v2/orders/{orderId}/serial-numbers</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Authorization</span><span class="p">:</span> <span class="s">Bearer [bearer token]</span>
+</code></pre>
+<div class="move-right">
+  <h3>(Optional) Request body example</h3>
+</div>
+<pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+  </span><span class="s2">"serials: [{
+        productId: "</span><span class="mi">13</span><span class="s2">",
+        description: "</span><span class="err">MacBook</span><span class="w"> </span><span class="err">Pro</span><span class="w"> </span><span class="mi">15</span><span class="s2">",
+        serialNumber: "</span><span class="err">C</span><span class="mi">02</span><span class="err">SP</span><span class="mi">3</span><span class="err">SRKJKNFVFB</span><span class="mi">23</span><span class="s2">"
+    }]
+}
+</span></code></pre>
+<p>Make a <code class="prettyprint">POST</code> request to <code class="prettyprint">/v2/orders/{orderId}/serial-numbers</code> when the serial numbers are known.</p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>serials</td>
+<td>array</td>
+<td>✔︎</td>
+<td>An array of one or more serials</td>
+</tr>
+<tr>
+<td>trackingLink</td>
+<td>string</td>
+<td></td>
+<td>A link to the postal companies tracking page for this shippment</td>
+</tr>
+<tr>
+<td>trackingNr</td>
+<td>string</td>
+<td></td>
+<td>The tracking number for the package</td>
+</tr>
+</tbody></table>
 
           <h1 id="webhooks">Webhooks</h1>
 <pre class="highlight http tab-http"><code><span class="nf">POST</span> <span class="nn">https://example.com/my/callback/</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
 <span class="na">LeaseCloud-Version</span><span class="p">:</span> <span class="s">1.0.0</span>
 <span class="na">LeaseCloud-Signature</span><span class="p">:</span> <span class="s">t=1499785732,v1=[HMAC_SHA-256_PAYLOAD],v1=[HMAC_SHA-256_PAYLOAD_OLD]</span>
+</code></pre><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+  </span><span class="s2">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"UNIQUE_EVENT_ID"</span><span class="w">
+  </span><span class="s2">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"NAME_OF_ACTION"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"FIELDS"</span><span class="p">:</span><span class="w"> </span><span class="s2">"FOR ACTION"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre><pre class="highlight php tab-php"><code><span class="cp">&lt;?php</span> <span class="nb">hash_hmac</span><span class="p">(</span><span class="s2">"sha256"</span><span class="p">,</span> <span class="s2">"${TIMESTAMP}.${PAYLOAD}"</span><span class="p">,</span> <span class="nx">WEBHOOK_SECRET</span><span class="p">);</span>
+</code></pre>
+<p>When becoming a partner we will ask for a url endpoint where we will make post requests to with updates.
+Webhooks are used to communicate events from leasecloud back to the partners site. They always contain the same datastructure.</p>
 
-{
-  "id": "UNIQUE_EVENT_ID"
-  "action": "NAME_OF_ACTION",
-  "data": {
-    "FIELDS": "FOR ACTION"
-  }
-}
-</code></pre>
-<p>/mock/:id/webhook</p>
-<pre class="highlight php tab-php"><code><span class="cp">&lt;?php</span> <span class="nb">hash_hmac</span><span class="p">(</span><span class="s2">"sha256"</span><span class="p">,</span> <span class="s2">"${TIMESTAMP}.${PAYLOAD}"</span><span class="p">,</span> <span class="nx">WEBHOOK_SECRET</span><span class="p">);</span>
-</code></pre>
+<p>We will make a POST request to the endpoint with a JSON body</p>
+
+<p>The signature is generated with the timestamp found in the LeaseCloud-Signature header combined with a . and the payload.</p>
+
 <h2 id="order-status-updated">Order status updated</h2>
 
-<p>We will make a <code class="prettyprint">POST</code> request to the endpoint provided in the initial checkout request every time the order status is updated.</p>
+<div class="move-right">
+  <h3>Response body</h3>
+</div>
+<pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+  </span><span class="s2">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"evt:e1f0aed8-883a-9751-74a3-48537d3d94ce"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"order.created"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"c1f0acd8-8e3e-4477-85d3-18337c3c92d6"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"orgNumber"</span><span class="p">:</span><span class="w"> </span><span class="s2">"5590894308"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"PENDING"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"totalAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">23323</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"VAT"</span><span class="p">:</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"shippingAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"shippingVAT"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SEK"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"months"</span><span class="p">:</span><span class="w"> </span><span class="mi">24</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"billing"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="s2">"firstName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Ora"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"lastName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Roob"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Myrtice70@yahoo.com"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"phone"</span><span class="p">:</span><span class="w"> </span><span class="s2">"(719) 365-7934 x29126"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"company"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Langosh, Kautzer and Ullrich"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"address"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1532 Edna Spring"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"address2"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"city"</span><span class="p">:</span><span class="w"> </span><span class="s2">"East Guidofort"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"postalCode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"17875"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"country"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SE"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="s2">"shipping"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="s2">"firstName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Brigitte"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"lastName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Wunsch"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Jon60@gmail.com"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"phone"</span><span class="p">:</span><span class="w"> </span><span class="s2">"803-546-0329"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"company"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Volkman - Goodwin"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"address"</span><span class="p">:</span><span class="w"> </span><span class="s2">"46995 Sandra Green"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"address2"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"city"</span><span class="p">:</span><span class="w"> </span><span class="s2">"South Aileenfurt"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"postalCode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"47920"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"country"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SE"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="s2">"items"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="s2">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Towels"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"productId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"23"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"articleNr"</span><span class="p">:</span><span class="w"> </span><span class="s2">"NCC-5347XF"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"unitAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">34</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"totalAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">8400</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"VAT"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="p">{</span><span class="w">
+        </span><span class="s2">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"NOPE"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"productId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"233"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"articleNr"</span><span class="p">:</span><span class="w"> </span><span class="s2">"NCC-5347XF"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"unitAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">34</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"totalAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">8400</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"VAT"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">],</span><span class="w">
+    </span><span class="s2">"createdAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2018-01-03T15:10:00.000Z"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"updatedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2018-01-03T15:10:00.000Z"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+<p>We will make a <code class="prettyprint">POST</code> request to the notification WebHook endpoint provided in the initial checkout request every time the order status is updated.</p>
 
 <p>The signature is generated with the timestamp found in the <code class="prettyprint">LeaseCloud-Signature</code> header combined with a <code class="prettyprint">.</code> and the <code class="prettyprint">payload</code></p>
 
-<p>The webhook will be repeatedly called until the partner acknowledges receipt. Acknowledgement is achieved by the store replying to the webhook with a 200 response, and a json object containing the leasecloud orderid and optionally the partners id for the order.</p>
+<p>An example of the request body is provided on the right</p>
+
+<p>The webhook will be repeatedly called until the partner acknowledges receipt. Acknowledgement is achieved by the store replying to the webhook with a 200 response, and a json object containing the leasecloud orderId and optionally the partners id for the order.</p>
+
+<h3 id="actions">Actions</h3>
+
+<ul>
+<li>order.created</li>
+<li>order.statusUpdated</li>
+</ul>
 
           <h1 id="errors">Errors</h1>
 <pre class="highlight json tab-json"><code><span class="w">
