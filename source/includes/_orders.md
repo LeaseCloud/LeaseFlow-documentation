@@ -133,3 +133,34 @@ shippedAt | string | | Date and time shipped ISO-8601
 trackingLink | string | | A link to the postal companies tracking page for this shippment
 trackingNr | string | | The tracking number for the package
 
+## Order serial numbers
+
+```http
+POST /v2/orders/{orderId}/serial-numbers HTTP/1.1
+Authorization: Bearer [bearer token]
+```
+
+<div class="move-right">
+  <h3>(Optional) Request body example</h3>
+</div>
+
+```json
+{
+  "serials: [{
+		productId: "13",
+		description: "MacBook Pro 15",
+		serialNumber: "C02SP3SRKJKNFVFB23"
+	}]
+}
+```
+
+Make a `POST` request to `/v2/orders/{orderId}/serial-numbers` when the serial numbers are known.
+
+Parameter | Type        | Required | Description
+--------- | ----------- | -------- | -----------
+serials | array | ✔︎ | An array of one or more serials
+trackingLink | string | | A link to the postal companies tracking page for this shippment
+trackingNr | string | | The tracking number for the package
+
+
+
