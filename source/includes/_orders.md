@@ -88,6 +88,7 @@ Status | Description
 ------ | -----------
 PENDING | The order has been received but the customer has not signed or the leasing company has not yet authorized the transaction. The order should not be shipped
 OK | All requirements have been forfilled and the order can be shipped
+DONE | The order has been forfilled and the contract started, changes are no longer possible by the partner
 CANCELLED | The order has been cancelled
 
 ## Cancel an order
