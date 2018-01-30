@@ -97,13 +97,24 @@ The signature is generated with the timestamp found in the LeaseCloud-Signature 
 }
 ```
 
+## Order status updated
+<div class="move-right">
+  <h3>Partenr response body</h3>
+</div>
+
+```json
+{
+  "id": "evt:e1f0aed8-883a-9751-74a3-48537d3d94ce"
+}
+```
+
 We will make a `POST` request to the notification WebHook endpoint provided in the initial checkout request every time the order status is updated.
 
 The signature is generated with the timestamp found in the `LeaseCloud-Signature` header combined with a `.` and the `payload`
 
 An example of the request body is provided on the right
 
-The webhook will be repeatedly called until the partner acknowledges receipt. Acknowledgement is achieved by the store replying to the webhook with a 200 response, and a json object containing the leasecloud orderId and optionally the partners id for the order.
+The webhook will be repeatedly called until the partner acknowledges receipt. Acknowledgement is achieved by the store replying to the webhook with a 200 response, and a json object containing the leasecloud webhook id.
 
 ### Actions
  * order.created
