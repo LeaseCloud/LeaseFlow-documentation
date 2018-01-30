@@ -28,6 +28,7 @@ The error object will always contain `code` and `message` and in the case of
 
 **Custom errors**
 
+* InvalidObject **400** = Invalid form input for any type of object submitted to server, also contains `fields` attribute
 * InvalidOrder **400** = Invalid form input and also contains `fields` attribute
 * OrderNotAccepted **400** = When an order is denied instantly like none existing org number or bad credit rating
 * OrderCantBeModified **403** = When it's to late or to early to change an order e.g. edit an order that is shipped
@@ -50,4 +51,8 @@ The error object will always contain `code` and `message` and in the case of
 ### Fields
 * field = Which field that didn't pass the validation
 * message = Human readable reason for invalidation
-* code = Only a few errors get's a code at the moment
+* name = [required, type]
+
+**Names**
+* required: a required field is missing
+* type: a required field is of the wrong type
