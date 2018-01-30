@@ -284,7 +284,7 @@ totalAmount | integer | ✔︎ | Total amount the customer will pay Ex. VAT <br>
 VAT | integer | ✔︎ | Total VAT amount
 shippingAmount | integer | ✔︎ | The shipping cost
 shippingVAT | integer | ✔︎ | The shipping cost VAT
-currency | enum | ✔︎ | In which currency is the amounts. We only support `SEK` at the moment
+currency | enum | ✔︎ | In which currency arer the amounts. We only support `SEK` at the moment
 locale | enum | ✔︎ | Purchase language string compliant with RFC 1766
 country | enum | ✔︎ | The purchase country 2 letter code e.g. SE
 months | integer | | The leasing period in months, if known
