@@ -18,7 +18,7 @@ Authorization: Bearer [bearer token]
 {
   "id": "c1f0acd8-8e3e-4477-85d3-18337c3c92d6",
   "orgNumber": "5590894308",
-  "status": "PENDING"
+  "status": "PENDING",
   "totalAmount": 23323,
   "VAT": 32,
   "shippingAmount": 0,

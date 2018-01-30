@@ -99,7 +99,7 @@ The signature is generated with the timestamp found in the LeaseCloud-Signature 
 
 ## Order status updated
 <div class="move-right">
-  <h3>Partenr response body</h3>
+  <h3>Partner response body</h3>
 </div>
 
 ```json
