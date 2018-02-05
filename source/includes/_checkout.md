@@ -77,10 +77,14 @@ Authorization: Bearer [bearer token]
       "VAT": 0
     }
   ],
-  "partnerUrls": {
-    "terms": "https://www.example.se/terms",
-    "checkout": "https://www.example.se/checkout",
-    "confirmation": "https://www.example.se/confirmation"
+  "partner": {
+    "name": "Permånad",
+    "domain": "permanad.se",
+    "urls": {
+      "terms": "https://permanad.se/terms",
+      "checkout": "https://permanad.se/checkout",
+      "confirmation": "https://permanad.se/yay/you/did/it"
+    }
   }
 }
 ```
@@ -135,11 +139,14 @@ The body of the http request contains the order information.
 
 Parameter | Type        | Required | Description
 --------- | ----------- | -------- | -----------
-partnerUrls | object | ✔︎ | An object containing urls to the relevant partner pages
- • terms | string | ✔︎ | The terms and conditions url
- • checkout | string | ✔︎ | The checkout page url
- • confirmation | string | ✔︎ | The confirmation page url
- • webhook | string | ✔︎ | The notification webhook url
+
+partner | object | ✔︎ | An object containing information relevant to the partner
+ • name | string | ✔︎ | The display name to be used for the partner in the checkout
+ • domain | string | ✔︎ | The name of the top domain that will be hosting the checkout
+ • urls | object | ✔︎ | An object containing urls to the relevant partner pages
+   • terms | string | ✔︎ | The terms and conditions url
+   • checkout | string | ✔︎ | The checkout page url
+   • confirmation | string | ✔︎ | The confirmation page url
 totalAmount | integer | ✔︎ | Total amount the customer will pay Ex. VAT <br> Minimum 6000 * 100
 VAT | integer | ✔︎ | Total VAT amount
 shippingAmount | integer | ✔︎ | The shipping cost
