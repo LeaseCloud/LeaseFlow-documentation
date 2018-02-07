@@ -186,7 +186,7 @@ orderId | string | The leasecloud order id
 ## Checkout API update end point
 
 ```http
-POST /v1/orders/{orderId} HTTP/1.1
+PATCH /v1/orders/{orderId} HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer [bearer token]
 ```
