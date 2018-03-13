@@ -20,15 +20,6 @@ Welcome to LeaseCloud API reference site. Please feel free to contact us if you 
 
 Here you will find everything you need to develop LeaseCloud modules for different e-commerce platforms or to integrate LeaseCloud in your checkout.
 
-<!---
-# SDK
-* [PHP SDK](https://github.com/LeaseCloud/leasecloud-php-sdk)
-* [.NET SDK](https://github.com/LeaseCloud/leasecloud-dotnet-sdk)
-
-# Plugins
-* [Woocommerce](https://wordpress.org/plugins/leasecloud-for-woocommerce/)
-* Magento [M1](https://www.leasecloud.se/leasing-magento-m1/) [M2](https://www.leasecloud.se/leasing-magento-2)
--->
 # Authorization
 <div class="move-right">
   <h3>Required http header</h3>
@@ -49,6 +40,7 @@ Until we have a signed partner agreement you will use a sandbox API key that is 
 
 ### Amount
 All amounts will be in the smallest currency amount. E.g. 1 SEK = 100 ören, 1 USD = 100 cent
+Total amount are excluding VAT eg totalAmount, shippingAmount
 
 ### Strings
 The maximum length of a string may be 255 characters.
@@ -58,4 +50,3 @@ All currencies is in ISO 4217 standard. E.g. SEK, EUR
 
 ### Country
 All Countries are is in ISO 3166 alpha-2. E.g. se = Sweden, no = Norway.
-
